@@ -15,7 +15,7 @@ def generate_embeddings(df):
     model = SentenceTransformer('all-MiniLM-L6-v2')
     
 
-    texts = df['embedding_text'].tolist() # what column, and does it need to be a list?
+    texts = df['embedding_text'].tolist()  
     embeddings = model.encode(texts, batch_size=32, show_progress_bar=True)
     print(f"Generated embeddings for {len(embeddings)} texts.")
     print(embeddings.shape)
