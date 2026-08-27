@@ -2,8 +2,11 @@ import pandas as pd
 from sentence_transformers import SentenceTransformer
 
 def load_data():
+  
     df = pd.read_csv("anime-dataset-2025.csv")
-    
+    print("shape before removing duplicate titles" , df.shape)
+    df = df.drop_duplicates(subset=['Title'])
+    print("shape after removing duplicate titles" , df.shape)
     synopsis_genres = df['Synopsis'].combine_first(df['Genres'])
     synopsis_genres_themes = synopsis_genres.combine_first(df['Themes'])
     
@@ -21,7 +24,8 @@ def generate_embeddings(df):
     print(embeddings.shape)
     return embeddings  
 def main():
-        generate_embeddings(load_data())
+     
+    load_data()
         
 if __name__ == "__main__":
     main()
