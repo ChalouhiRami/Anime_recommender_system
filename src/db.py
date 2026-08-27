@@ -36,17 +36,18 @@ def get_recommendations(title,top_n):
     cursor= conn.cursor()
  
         
-    cursor.execute("SELECT title,embedding <=> (Select embedding FROM anime WHERE  title =%s)AS distance  FROM  anime where title != %s ORDER BY distance LIMIT %s",(title,title,top_n))
+    cursor.execute("SELECT title,genres,synopsis,score,embedding <=> (Select embedding FROM anime WHERE  title =%s)AS distance  FROM  anime where title != %s ORDER BY distance LIMIT %s",(title,title,top_n))
     results =   cursor.fetchall()
     cursor.close()
     conn.close()
+    for title, genres, synopsis, score, distance in results:
+     print(f"{title} ({score}) - {distance:.3f}")
     return results 
     
 def main():
     try:
-        df=load_data()
-        embedding = generate_embeddings(df)
-        insert_embedding(df,embedding)
+        get_recommendations('One Piece',20
+                            )
             
     except Exception as e :print("Can't INSERT",e)
     
