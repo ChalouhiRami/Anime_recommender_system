@@ -3,7 +3,8 @@ import psycopg2
 from dotenv import load_dotenv
 from data_prep import load_data,generate_embeddings
 import pandas as pd
-
+import ast
+import numpy as np
 load_dotenv()
 
 def get_connection():
@@ -30,24 +31,29 @@ def insert_embedding(df,embeddings):
     conn.commit()   
     conn.close()
     
-    
+
+def parse_embedding(embedding_str):
+    as_list = ast.literal_eval(embedding_str)
+    return np.array(as_list)    
 def get_recommendations(title,top_n):
     conn = get_connection()
     cursor= conn.cursor()
  
         
-    cursor.execute("SELECT title,genres,synopsis,score,embedding <=> (Select embedding FROM anime WHERE  title =%s)AS distance  FROM  anime where title != %s ORDER BY distance LIMIT %s",(title,title,top_n))
+    cursor.execute(" SELECT title, genres, synopsis, score, embedding, embedding <=> (SELECT embedding FROM anime WHERE title = %s) AS distance FROM anime WHERE title != %s ORDER BY distance LIMIT %s",(title,title,top_n))
     results =   cursor.fetchall()
     cursor.close()
     conn.close()
-    for title, genres, synopsis, score, distance in results:
-     print(f"{title} ({score}) - {distance:.3f}")
+    for title, genres, synopsis, score, embedding, distance in results:
+     print(f"{title} ({score}) - {distance:.3f}{embedding}")
     return results 
     
 def main():
     try:
-        get_recommendations('One Piece',20
-                            )
+       results= get_recommendations('Death Note',30)
+       first_embedding = results[0][4]  # index 4 = embedding, based on your SELECT order
+       parsed = parse_embedding(first_embedding)
+       print(type(parsed), parsed.shape)
             
     except Exception as e :print("Can't INSERT",e)
     
