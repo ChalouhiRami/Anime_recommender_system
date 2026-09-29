@@ -51,7 +51,7 @@ def get_recommendations(title,top_n):
 def main():
     try:
        results= get_recommendations('Death Note',30)
-       first_embedding = results[0][4]  # index 4 = embedding, based on your SELECT order
+       first_embedding = results[0][4]   
        parsed = parse_embedding(first_embedding)
        print(type(parsed), parsed.shape)
             
