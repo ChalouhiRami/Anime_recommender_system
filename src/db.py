@@ -44,8 +44,8 @@ def get_recommendations(title,top_n):
     results =   cursor.fetchall()
     cursor.close()
     conn.close()
-    for title, genres, synopsis, score, embedding, distance in results:
-     print(f"{title} ({score}) - {distance:.3f}{embedding}")
+    # for title, genres, synopsis, score, embedding, distance in results:
+    #  print(f"{title} ({score}) - {distance:.3f}")
     return results 
     
 def main():

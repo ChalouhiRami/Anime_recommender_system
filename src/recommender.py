@@ -6,11 +6,13 @@ def cosine_similarity(a, b):
     return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
 
 
-def mmr_rerank(results, top_n=10, lambda_param=0.7):
+def mmr_rerank(results,query_title, top_n=10, lambda_param=0.7):
    
     candidates = []
     for r in results:
         title, genres, synopsis, score, embedding_str, distance = r
+        if is_franchise(query_title, title):
+            continue
         embedding = parse_embedding(embedding_str)
         relevance = 1 - distance
         candidates.append({
@@ -48,11 +50,21 @@ def mmr_rerank(results, top_n=10, lambda_param=0.7):
         remaining.remove(best_candidate)
 
     return selected
-
+def is_franchise(query_title, candidate_title):
+    q = query_title.lower().strip()
+    c = candidate_title.lower().strip()
+    
+    
+    if q == c:
+        return True
+    
+    if c.startswith(q) and (len(c) == len(q) or not c[len(q)].isalnum()):
+        return True 
+    
 
 def main():
     results = get_recommendations('Death Note', 30)
-    reranked = mmr_rerank(results, top_n=10, lambda_param=0.7)
+    reranked = mmr_rerank(results, query_title='Death Note', top_n=10, lambda_param=0.7)
     for c in reranked:
         print(f"{c['title']} ({c['score']}) - relevance: {c['relevance']:.3f}")
 
