@@ -6,11 +6,13 @@ def cosine_similarity(a, b):
     return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
 
 
-def mmr_rerank(results,query_title, top_n=10, lambda_param=0.7):
+def mmr_rerank(results,query_title, top_n=10, lambda_param=0.7,min_score=6.5):
    
     candidates = []
     for r in results:
         title, genres, synopsis, score, embedding_str, distance = r
+        if score is None or score < min_score :
+            continue
         if is_franchise(query_title, title):
             continue
         embedding = parse_embedding(embedding_str)
