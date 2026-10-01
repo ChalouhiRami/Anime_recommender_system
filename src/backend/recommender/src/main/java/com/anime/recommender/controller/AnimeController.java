@@ -1,7 +1,7 @@
 package com.anime.recommender.controller;
 
 import com.anime.recommender.model.Anime;
-import com.anime.recommender.repository.AnimeRepository;
+import com.anime.recommender.service.AnimeService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -11,12 +11,11 @@ import java.util.Map;
 @RequestMapping("/api")
 public class AnimeController {
 
+    // inject the service instead of repository
+    private final AnimeService animeService;
 
-    private final AnimeRepository animeRepository;
-
-
-    public AnimeController(AnimeRepository animeRepository) {
-        this.animeRepository = animeRepository;
+    public AnimeController(AnimeService animeService) {
+        this.animeService = animeService;
     }
 
     @GetMapping("/health")
@@ -27,9 +26,13 @@ public class AnimeController {
         );
     }
 
-    // 3. Our new DB search endpoint: http://localhost:8080/api/anime/search?title=Death
-    @GetMapping("/anime/search")
-    public List<Anime> searchAnime(@RequestParam String title) {
-        return animeRepository.findByTitleContainingIgnoreCase(title);
+
+    @GetMapping("/anime/recommend")
+    public List<Anime> getRecommendations(
+            @RequestParam String title,
+            @RequestParam(defaultValue = "10") int limit,
+            @RequestParam(defaultValue = "6.5") Double minScore) {
+
+        return animeService.getRecommendations(title, limit, minScore);
     }
 }
