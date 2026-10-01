@@ -2,21 +2,22 @@ package com.anime.recommender.service;
 
 import com.anime.recommender.model.Anime;
 import com.anime.recommender.repository.AnimeRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class AnimeService {
 
     private final AnimeRepository animeRepository;
 
-    //DI
     public AnimeService(AnimeRepository animeRepository) {
         this.animeRepository = animeRepository;
     }
-
 
     private boolean isFranchise(String queryTitle, String candidateTitle) {
         String q = queryTitle.toLowerCase().trim();
@@ -26,7 +27,6 @@ public class AnimeService {
             return true;
         }
 
-        // Checks if candidate starts with query title followed by space or punctuation
         if (c.startsWith(q) && (c.length() == q.length() || !Character.isLetterOrDigit(c.charAt(q.length())))) {
             return true;
         }
@@ -35,12 +35,21 @@ public class AnimeService {
     }
 
     public List<Anime> getRecommendations(String title, int limit, Double minScore) {
-               List<Anime> rawCandidates = animeRepository.findSimilarAnime(title, 30);
+        // 1. USE OPTIONAL: Check if the anime actually exists in our DB first!
+        Optional<Anime> sourceAnime = animeRepository.findByTitle(title);
 
+        if (sourceAnime.isEmpty()) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Anime '" + title + "' was not found in the database!"
+            );
+        }
+
+        // 2. If it exists, fetch candidates and run our filters
+        List<Anime> rawCandidates = animeRepository.findSimilarAnime(title, 30);
         List<Anime> filtered = new ArrayList<>();
 
         for (Anime anime : rawCandidates) {
-
             if (isFranchise(title, anime.getTitle())) {
                 continue;
             }
@@ -50,7 +59,6 @@ public class AnimeService {
             }
 
             filtered.add(anime);
-
 
             if (filtered.size() == limit) {
                 break;
