@@ -20,6 +20,9 @@ public class AnimeService {
     }
 
     private boolean isFranchise(String queryTitle, String candidateTitle) {
+        if (queryTitle == null || candidateTitle == null) {
+            return false;
+        }
         String q = queryTitle.toLowerCase().trim();
         String c = candidateTitle.toLowerCase().trim();
 
@@ -33,11 +36,33 @@ public class AnimeService {
 
         return false;
     }
+    public List<Anime> searchAnime(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            return List.of();
+        }
+        return animeRepository.findByTitleContainingIgnoreCase(query.trim());
+    }
+    private boolean isSameFranchise(Anime source, Anime candidate) {
+        if (source == null || candidate == null) {
+            return false;
+        }
+
+
+        if (isFranchise(source.getTitle(), candidate.getTitle())) {
+            return true;
+        }
+
+        
+        if (isFranchise(source.getEnglishTitle(), candidate.getEnglishTitle())) {
+            return true;
+        }
+
+        return false;
+    }
 
     public List<Anime> getRecommendations(String title, int limit, Double minScore) {
-        // 1. USE OPTIONAL: Check if the anime actually exists in our DB first!
-        Optional<Anime> sourceAnime = animeRepository.findByTitle(title);
 
+        Optional<Anime> sourceAnime = animeRepository.findByTitleIgnoreCaseOrEnglishTitleIgnoreCase(title, title);
         if (sourceAnime.isEmpty()) {
             throw new ResponseStatusException(
                     HttpStatus.NOT_FOUND,
@@ -49,8 +74,11 @@ public class AnimeService {
         List<Anime> rawCandidates = animeRepository.findSimilarAnime(title, 30);
         List<Anime> filtered = new ArrayList<>();
 
+        Anime source = sourceAnime.get();
+
         for (Anime anime : rawCandidates) {
-            if (isFranchise(title, anime.getTitle())) {
+
+            if (isSameFranchise(source, anime)) {
                 continue;
             }
 
@@ -64,7 +92,6 @@ public class AnimeService {
                 break;
             }
         }
-
         return filtered;
     }
 }

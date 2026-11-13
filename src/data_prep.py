@@ -7,10 +7,21 @@ def load_data():
     print("shape before removing duplicate titles" , df.shape)
     df = df.drop_duplicates(subset=['Title'])
     print("shape after removing duplicate titles" , df.shape)
-    synopsis_genres = df['Synopsis'].combine_first(df['Genres'])
-    synopsis_genres_themes = synopsis_genres.combine_first(df['Themes'])
     
-    df['embedding_text'] = synopsis_genres_themes
+    
+    title = df['Title'].fillna("")
+    english_title = df['Title English'].fillna("")  
+    genres = df['Genres'].fillna("")
+    themes = df['Themes'].fillna("")
+    synopsis = df['Synopsis'].fillna("")
+
+    df['embedding_text'] = (
+        "Title: " + title +
+        ". English Title: " + english_title +
+        ". Genres: " + genres +
+        ". Themes: " + themes +
+        ". Synopsis: " + synopsis
+    )
     df = df.dropna(subset=['embedding_text'])
     return df
 def generate_embeddings(df):

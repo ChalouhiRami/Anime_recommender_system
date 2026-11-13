@@ -17,20 +17,32 @@ def get_connection():
         password=os.getenv("DB_PASSWORD")
     )
     return conn
-def insert_embedding(df,embeddings):
-    conn=get_connection()
-    cur =conn.cursor()
-    for i in range (len(df)) :
-        title=df['Title'].iloc[i];
-        genres=df['Genres'].iloc[i];
-        synopsis=df['Synopsis'].iloc[i];
+def insert_embedding(df, embeddings):
+    conn = get_connection()
+    cur = conn.cursor()
+    for i in range(len(df)):
+        title = df['Title'].iloc[i]
+        
+        raw_eng = df['Title English'].iloc[i]
+        english_title = None if pd.isna(raw_eng) else str(raw_eng)
+        
+        genres = df['Genres'].iloc[i]
+        synopsis = df['Synopsis'].iloc[i]
+        
         raw_score = df['Score'].iloc[i]
         scores = None if pd.isna(raw_score) else float(raw_score)
-        embedding=str(embeddings[i].tolist())
-        cur.execute("INSERT INTO anime(title,embedding,genres,synopsis,score) Values( %s,%s,%s,%s,%s)",(title,embedding,genres,synopsis,scores))
+        
+        embedding = str(embeddings[i].tolist())
+        
+        cur.execute(
+            """
+            INSERT INTO anime(title, english_title, embedding, genres, synopsis, score) 
+            VALUES (%s, %s, %s, %s, %s, %s)
+            """,
+            (title, english_title, embedding, genres, synopsis, scores)
+        )
     conn.commit()   
     conn.close()
-    
 
 def parse_embedding(embedding_str):
     as_list = ast.literal_eval(embedding_str)
@@ -49,17 +61,20 @@ def get_recommendations(title,top_n):
     return results 
     
 def main():
-    try:
-       results= get_recommendations('Death Note',30)
-       first_embedding = results[0][4]   
-       parsed = parse_embedding(first_embedding)
-       print(type(parsed), parsed.shape)
-            
-    except Exception as e :print("Can't INSERT",e)
+    print("1. Loading and preparing data...")
+    df = load_data()
     
+    print("2. Generating SentenceTransformer embeddings (this will take a few minutes)...")
+    embeddings = generate_embeddings(df)
     
-if __name__ =="__main__":
-    main()
+    print("3. Inserting rows into PostgreSQL...")
+    insert_embedding(df, embeddings)
+    print("Done! All anime and embeddings inserted successfully.")
 
+if __name__ == "__main__":
+    main()
+    
+    
+ 
 
  

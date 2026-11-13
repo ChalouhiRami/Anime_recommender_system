@@ -27,7 +27,10 @@ public class AnimeController {
         );
     }
 
-
+    @GetMapping("/anime/search")
+    public List<Anime> searchAnime(@RequestParam String title) {
+        return animeService.searchAnime(title);
+    }
     @GetMapping("/anime/recommend")
     public List<Anime> getRecommendations(
             @RequestParam String title,

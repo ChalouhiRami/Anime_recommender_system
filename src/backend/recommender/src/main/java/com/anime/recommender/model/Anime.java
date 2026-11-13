@@ -13,28 +13,29 @@ public class Anime {
     @Column(name = "title")
     private String title;
 
+    @Column(name = "english_title")
+    private String englishTitle;
+
     @Column(name = "genres")
     private String genres;
 
     @Column(name = "synopsis", columnDefinition = "TEXT")
     private String synopsis;
 
-    //scores can be null we use the Double wrapper
     @Column(name = "score")
     private Double score;
-
 
     public Anime() {
     }
 
-    public Anime(Long id, String title, String genres, String synopsis, Double score) {
+    public Anime(Long id, String title, String englishTitle, String genres, String synopsis, Double score) {
         this.id = id;
         this.title = title;
+        this.englishTitle = englishTitle;
         this.genres = genres;
         this.synopsis = synopsis;
         this.score = score;
     }
-
 
     public Long getId() {
         return id;
@@ -50,6 +51,14 @@ public class Anime {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public String getEnglishTitle() {
+        return this.englishTitle;
+    }
+
+    public void setEnglishTitle(String englishTitle) {
+        this.englishTitle = englishTitle;
     }
 
     public String getGenres() {
